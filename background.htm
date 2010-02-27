@@ -1,0 +1,86 @@
+<html>
+  <script>
+    // Helpers to store and access objects in local storage.
+    Storage.prototype.setObject = function(key, value) {
+      this.setItem(key, JSON.stringify(value));
+    }
+    Storage.prototype.getObject = function(key) {
+      var value = this.getItem(key);
+      if (value == null) {
+        return null;
+      } else {
+        return JSON.parse(value);
+      }
+    }
+
+    // Helper to get extension version.
+    chrome.extension.getVersion = function() { 
+      if (!chrome.extension.version_) { 
+        var xhr = new XMLHttpRequest(); 
+        xhr.open("GET", chrome.extension.getURL('manifest.json'), false); 
+        xhr.onreadystatechange = function() { 
+          if (this.readyState == 4) { 
+            var manifest = JSON.parse(this.responseText); 
+            chrome.extension.version_ = manifest.version; 
+          } 
+        }; 
+        xhr.send(); 
+      } 
+      return chrome.extension.version_; 
+    }; 
+        
+    // Server procedure for content script.
+    // Receives a request containing two parameters:
+    //   method:
+    //     "retrieve" to retrieve an object from local storage.
+    //     "store" to store an object in the local storage.
+    //     "get_filter" to retrieve the filter stats for a given URL.
+    //   arg: the term to look up or the name of the object to retrieve/store.
+    //   arg2: the object to store. Used only with "store".
+    chrome.extension.onRequest.addListener(function(request, sender, callback) {
+      if (request.method == 'retrieve') {
+        // Return an object from local storage.
+        callback(localStorage.getObject(request.arg));
+      } else if (request.method == 'store') {
+        // Return an object from local storage.
+        localStorage.setObject(request.arg, request.arg2);
+        callback('');
+      } else if (request.method == 'get_filter') {
+        // Return the appropriate filter object.
+        var req_url = request.arg;
+        var url_parts = localStorage.getObject('url').split(/\$\$/g);
+        var all_match = true;
+        
+        for (var j in url_parts) {
+          if (req_url.indexOf(url_parts[j]) == -1) {
+            all_match = false;
+            break;
+          }
+        }
+        
+        if (all_match) {
+          callback({target: localStorage.getObject('target'),
+                    scroll: {x: localStorage.getObject('scrollX'),
+                             y: localStorage.getObject('scrollY')}});
+        } else {
+          callback('');
+        }
+      } else {
+        // Invalid request method. Ignore it.
+        callback('');
+      }
+    });
+    
+    // If new version is loaded, show the options page.
+    saved_version = localStorage.getObject('version');
+    current_version = chrome.extension.getVersion();
+    if (saved_version) {
+      saved_version = saved_version.split('.')[0] + '.' + saved_version.split('.')[1];
+      current_version = current_version.split('.')[0] + '.' + current_version.split('.')[1];
+    }
+    if (saved_version != current_version) {
+      localStorage.setObject('version', current_version);
+      chrome.tabs.create({url: 'options.htm'});
+    }
+  </script>
+</html>

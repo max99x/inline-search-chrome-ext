@@ -1,0 +1,21 @@
+{
+  "name": "Inline Search & Lookup",
+  "version": "0.9.3",
+  "description": "Search or look up selection and view results inline without leaving the page.",
+  "icons": { "128": "icon.png" },
+  "options_page": "options.htm",
+  "background_page": "background.htm",
+  "content_scripts": [{
+    "matches": [ "http://*/*", "https://*/*" ],
+    "css": [ "frame.css" ],
+    "js": [ "search.js" ],
+    "all_frames": false,
+    "run_at": "document_end"
+  }, {
+    "matches": [ "http://*/*", "https://*/*" ],
+    "js": [ "filter.js" ],
+    "all_frames": true,
+    "run_at": "document_start"
+  }],
+  "permissions": ["tabs"]
+}
