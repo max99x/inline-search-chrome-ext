@@ -1,0 +1,15 @@
+v0.9.3
+  * Fixed scrolling on new Chrome.
+
+v0.9.2
+  * Minor fixes.
+
+v0.9.1
+  * Added some more dictionaries.
+  * Allowed the usage of classes in filters.
+
+v0.9.1
+  * Added Unicode support.
+
+v0.9
+  * Initial release.
