@@ -268,24 +268,19 @@
       //]]>
     </script>
     <style type="text/css">
-      #sourceEditor input[type=text] {
-        border: 1px #bbb solid;
-        -webkit-transition: background-color 0.2s linear;
-      }
-      
-      .invalid {
-        background-color: #fcc;
-      }
-      
-      .valid {
-        background-color: #cfc;
-      }
-      
       body {
         font-family: Arial, Tahoma, sans-serif;
         margin-top: 0px;
         padding-top: 0px;
       }
+      
+      label {
+        float: left;
+        width: 15em;
+        padding-right: 20px;
+        text-align: right;
+      }
+      
       h1 {
         margin-top: 0px;
         color: #F8F8FF;
@@ -297,46 +292,7 @@
         text-align: center;
         -webkit-box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 5px;
       }
-      label {
-        float: left;
-        width: 15em;
-        padding-right: 20px;
-        text-align: right;
-      }
-      select {
-        max-width: 200px;
-        position: relative;
-        top: -3px;
-      }
-      .field {
-        padding-top: 5px;
-      }
-      .note {
-        color: grey;
-        margin-left: 21.7em;
-        font-size: 75%;
-      }
-      #container {
-        margin: auto;
-        width: 600px;
-        margin-top: 0px;
-        padding-top: 0px;
-      }
-      #saveStatusMessage {
-        display: block;
-        position: fixed;
-        top: 45%;
-        left: 0px;
-        text-align: center;
-        color: white;
-        font-weight: bold;
-        text-shadow: rgba(0, 0, 0, 0.2) 0px -1px 1px;
-        background-image: -webkit-gradient(linear, left top, left bottom, from(#BBBBBB), to(gray));
-        border-radius: 0px 15px 15px 0px;
-        padding: 10px 20px;
-        opacity: 0;
-        -webkit-transition: opacity 1.5s ease;
-      }
+      
       fieldset {
         background: #F8F8FF;
         border: 1px #CCC solid;
@@ -347,6 +303,7 @@
         margin-bottom: 20px;
         -webkit-box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 5px;
       }
+      
       legend {
         background: #F8F8FF;
         border: 1px #CCC solid;
@@ -355,14 +312,54 @@
         color: #777;
         font-size: 110%;
       }
+      
+      select {
+        max-width: 200px;
+        position: relative;
+        top: -3px;
+      }
+      
       input, select {
         margin-left: 0px;
       }
+      
       input[type=text] {
         width: 2.5em;
         position: relative;
         top: -4px;
       }
+      
+      button {
+        float: right;
+        position: relative;
+        top: -4px;
+      }
+      
+      .field {
+        padding-top: 5px;
+      }
+      
+      .invalid {
+        background-color: #fcc;
+      }
+      
+      .valid {
+        background-color: #cfc;
+      }
+      
+      .note {
+        color: grey;
+        margin-left: 21.7em;
+        font-size: 75%;
+      }
+      
+      #container {
+        margin: auto;
+        width: 600px;
+        margin-top: 0px;
+        padding-top: 0px;
+      }
+      
       #saveButton {
         margin: auto;
         margin-bottom: 10px;
@@ -382,15 +379,28 @@
       #saveButton:hover {
         background-image: -webkit-gradient(linear, left top, left bottom, from(#CCC), to(#909090));
       }
+      
       #saveButton:active {
         background-image: -webkit-gradient(linear, left top, left bottom, from(gray), to(#BBBBBB));
         padding: 3px 12px 2px 13px;
       }
-      button {
-        float: right;
-        position: relative;
-        top: -4px;
+      
+      #saveStatusMessage {
+        display: block;
+        position: fixed;
+        top: 45%;
+        left: 0px;
+        text-align: center;
+        color: white;
+        font-weight: bold;
+        text-shadow: rgba(0, 0, 0, 0.2) 0px -1px 1px;
+        background-image: -webkit-gradient(linear, left top, left bottom, from(#BBBBBB), to(gray));
+        border-radius: 0px 15px 15px 0px;
+        padding: 10px 20px;
+        opacity: 0;
+        -webkit-transition: opacity 1.5s ease;
       }
+      
       #sourceEditor {
         width: 570px;
         position: fixed;
@@ -401,10 +411,10 @@
         opacity: 0;
         visibility: hidden;
       }
-      .rangeValue {
-        color: #666666;
-        position: relative;
-        top: -8px;
+      
+      #sourceEditor input[type=text] {
+        border: 1px #bbb solid;
+        -webkit-transition: background-color 0.2s linear;
       }
     </style>
   </head>
