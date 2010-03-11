@@ -13,10 +13,10 @@ var HANDLE_ICON_URL = chrome.extension.getURL('handle.png');
 
 // Internal global vars.
 var body = document.getElementsByTagName('body')[0];
+var source_url = null;
 
 // Extension options with defaults.
 var options = {
-  url: 'http://www.tfd.com/p/$$',
   clickModifier: 'Alt',
   shortcutModifier: 'Alt',
   shortcutKey: 'W',
@@ -48,6 +48,10 @@ function initialize() {
   for (var opt in options) {
     setOpt(opt);
   }
+  
+  chrome.extension.sendRequest({method: 'get_source_url'}, function(response) {
+    source_url = response;
+  });
   
   // Manually inject the stylesheet into non-HTML pages that have no <head>.
   if (!document.head) {
@@ -116,7 +120,7 @@ function handleKeypress(e) {
     // Show query form if it's not already visible or clear it otherwise.
     if (!document.getElementById(FORM_ID)) {
       removePopup(true, false);
-      grayOut(true);
+      grayOut(true, ROOT_ID);
       createQueryForm();
     } else {
       document.getElementById(FORM_ID).getElementsByTagName('input')[0].value = '';
@@ -154,7 +158,7 @@ function createQueryForm() {
   qform.appendChild(textbox);
   
   function initLookup() {
-    grayOut(false);
+    grayOut(false, ROOT_ID);
     removePopup(false, true);
     if (textbox.value.replace(/^\s+|\s+$/g, '') != '') {
       createCenteredPopup(textbox.value);
@@ -215,7 +219,7 @@ function createPopup(query, x, y, windowX, windowY, fixed) {
   // Create the frame, set its id and insert it.
   var frame = document.createElement('iframe');
   frame.id = ROOT_ID;
-  frame.src = options.url.replace(/\$\$/g, escape(utf8encode(query)).replace('+', '%20'));
+  frame.src = source_url.replace(/\$\$/g, escape(utf8encode(query)).replace('+', '%20'));
   // Unique class to differentiate between frame instances.
   frame.className = ROOT_ID + (new Date()).getTime();
   body.appendChild(frame);
@@ -280,7 +284,7 @@ function removePopup(do_frame, do_form) {
   var form = document.getElementById(FORM_ID);
   
   if (form && do_form) {
-    grayOut(false);
+    grayOut(false, ROOT_ID);
     form.style.opacity = 0;
     setTimeout(function() {if (form) body.removeChild(form);}, 400);
   }
@@ -308,42 +312,6 @@ function removePopup(do_frame, do_form) {
 /***************************************************************
  *                   General Helper Functions                  *
  ***************************************************************/
-// Background graying function, based on: 
-// http://www.hunlock.com/blogs/Snippets:_Howto_Grey-Out_The_Screen
-function grayOut(vis) {
-  // Pass true to gray out screen, false to ungray.
-  var dark_id = ROOT_ID + '_shader';
-  var dark = document.getElementById(dark_id);
-  var first_time = (dark == null);
-  
-  if (first_time) {
-    // First time - create shading layer.
-    var tnode = document.createElement('div');
-    tnode.id = dark_id;
-    
-    tnode.style.position = 'absolute';
-    tnode.style.top = '0px';
-    tnode.style.left = '0px';
-    tnode.style.overflow = 'hidden';
-    
-    document.body.appendChild(tnode);
-    dark = document.getElementById(dark_id);
-  }
-  
-  if (vis) {
-    // Set the shader to cover the entire page and make it visible.
-    dark.style.zIndex = BASE_Z_INDEX - 1;
-    dark.style.backgroundColor = '#000000';
-    dark.style.width = body.scrollWidth + 'px';
-    dark.style.height = body.scrollHeight + 'px';
-    dark.style.display = 'block';
-    
-    setTimeout(function() {dark.style.opacity = 0.7;}, 100);
-  } else if (dark.style.opacity != 0) {
-    setTimeout(function() {dark.style.opacity = 0;}, 100);
-    setTimeout(function() {dark.style.display = 'none';}, 400);
-  }
-}
 
 // Returns a trimmed version of the currently selected text.
 function getTrimmedSelection() {
