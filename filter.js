@@ -39,10 +39,12 @@ function applyScrolling(target, x, y) {
   }
 }
 
-if (window == top) return;
 
-chrome.extension.sendRequest({method: 'get_filter', arg: String(window.location)}, function(response) {
-  if (!response) return;
-  
-  applyScrolling(response.target, response.scroll.x, response.scroll.y);
-});
+// Main procedure.
+if (window != top) {
+  chrome.extension.sendRequest({method: 'get_filter', arg: String(window.location)}, function(response) {
+    if (response) {
+      applyScrolling(response.target, response.scroll.x, response.scroll.y);
+    }
+  });
+}

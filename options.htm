@@ -1,161 +1,54 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
  
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
   <head>
-    <title>Inline Search & Lookup - Options</title>
+    <title>Inline Search &amp; Lookup - Options</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <script type="text/javascript" src="helper.js"></script>
     <script type="text/javascript">
       //<![CDATA[
-      // Helpers to store and access objects in local storage.
-      Storage.prototype.setObject = function(key, value) {
-        this.setItem(key, JSON.stringify(value));
-      }
-      Storage.prototype.getObject = function(key) {
-        var value = this.getItem(key);
-        if (value == null) {
-          return null;
-        } else {
-          return JSON.parse(value);
-        }
-      }
       
-      // Set the active option in the <select> named select_name to choice.
+      $ = function(x) { return document.getElementById(x) };
+      
+      // Set the active option in the <select> called select_name to choice.
       function setSelection(select_name, choice) {
-        var select = document.getElementById(select_name);
-        for (var i in select.children) {
-          var child = select.children[i];
+        var select = $(select_name);
+        var options = select.getElementsByTagName('option');
+        for (var i in options) {
+          var child = options[i];
           if (child.value == choice) {
-            child.selected = 'true';
+            child.selected = 'selected';
             break;
           }
         }
       }
       
-      var selects    = ['clickModifier', 'shortcutModifier', 'shortcutKey'];
+      var selects    = ['clickModifier', 'shortcutModifier', 'shortcutKey',
+                        'selectedSource'];
       var checkboxes = ['shortcutEnable', 'shortcutSelection', 'hideWithEscape',
                         'saveFrameSize'];
-      var textboxes  = ['url', 'target', 'engineName'];
-      var numboxes   = ['frameWidth', 'frameHeight', 'queryFormWidth',
-                        'scrollX', 'scrollY'];
-      var DICTIONARIES = {
-        'The Free Dictionary (Print)': {
-          url: 'http://www.tfd.com/p/$$',
-          target: 'MainTxt',
-          scrollX: 0,
-          scrollY: 0
-        },
-        'The Free Dictionary': {
-          url: 'http://www.tfd.com/$$',
-          target: 'MainTitle',
-          scrollX: 0,
-          scrollY: 0
-        },
-        'Dictionary.com': {
-          url: 'http://dictionary.reference.com/browse/$$',
-          target: 'query_h1',
-          scrollX: 0,
-          scrollY: 0
-        },
-        'Merriam-Webster': {
-          url: 'http://www.merriam-webster.com/dictionary/$$',
-          target: 'mwEntryData',
-          scrollX: -5,
-          scrollY: 0
-        },
-        'Webster 1913 (OneLook)': {
-          url: 'http://www.onelook.com/?other=web1913&w=$$',
-          target: '',
-          scrollX: 0,
-          scrollY: 200
-        },
-        'Webster 1913 (Extended)': {
-          url: 'http://www.webster-dictionary.org/definition/$$',
-          target: 'TitleLine',
-          scrollX: 0,
-          scrollY: 0
-        },
-        'Answers.com': {
-          url: 'http://www.answers.com/topic/$$',
-          target: '',
-          scrollX: 178,
-          scrollY: 283
-        },
-        'Wikipedia': {
-          url: 'http://en.wikipedia.org/wiki/$$',
-          target: 'firstHeading',
-          scrollX: 240,
-          scrollY: 10
-        },
-        'Wiktionary': {
-          url: 'http://en.wiktionary.org/wiki/$$',
-          target: 'firstHeading',
-          scrollX: 0,
-          scrollY: 0
-        },
-        'Google Search': {
-          url: 'http://www.google.com/search?q=$$',
-          target: 'res',
-          scrollX: 0,
-          scrollY: 0
-        }/*,
-        'Google Dictionary (English)': {
-          url: 'http://www.google.com/dictionary?langpair=en|en&q=$$',
-          target: 'pr-root',
-          scrollX: 0,
-          scrollY: 0
-        }*/,
-        'WordNet 3.0': {
-          url: 'http://wordnetweb.princeton.edu/perl/webwn?s=$$',
-          target: '',
-          scrollX: 0,
-          scrollY: 170
-        },
-        'YourDictionary.com': {
-          url: 'http://www.yourdictionary.com/$$',
-          target: 'def',
-          scrollX: 0,
-          scrollY: 0
-        },
-        'AllWords.com': {
-          url: 'http://www.allwords.com/word-$$.html',
-          target: '',
-          scrollX: 175,
-          scrollY: 138
-        },
-        'RhymeZone': {
-          url: 'http://www.rhymezone.com/r/rhyme.cgi?Word=$$',
-          target: '',
-          scrollX: 30,
-          scrollY: 310
-        },
-        'WordSmyth': {
-          url: 'http://www.wordsmyth.net/live/home.php?script=search&matchent=$$&matchtype=exact',
-          target: '',
-          scrollX: 0,
-          scrollY: 210
-        },
-        'InfoPlease': {
-          url: 'http://dictionary.infoplease.com/$$',
-          target: 'meaning',
-          scrollX: 0,
-          scrollY: 0
-        }
-      };
+      var numboxes   = ['frameWidth', 'frameHeight', 'queryFormWidth'];
       
-      // Fills the engine/dictionary selection list from DICTIONARIES.
-      function fillEnginesList() {
-        var list = document.getElementById('source');
-        for (var i in DICTIONARIES) {
-          var opt = document.createElement('option');
-          opt.innerText = i;
-          opt.value = i;
-          list.appendChild(opt);
-        }
+      // Fills the engine/dictionary selection list.
+      function fillSourcesList() {
+        var list = $('selectedSource');
+        var sources = localStorage.getObject('sources');
         
-        var opt = document.createElement('option');
-        opt.innerText = 'Custom';
-        opt.value = 'Custom';
-        list.appendChild(opt);
+        list.innerHTML = '';
+        for (var i in sources) {
+          var opt_group = document.createElement('optgroup');
+          opt_group.label = i;
+          
+          for (var j in sources[i]) {
+            var opt = document.createElement('option');
+            opt.innerText = j;
+            opt.value = i + '::' + j;
+            opt_group.appendChild(opt);
+          }
+          
+          list.appendChild(opt_group);
+        }
       }
       
       // Restores state from localStorage.
@@ -164,14 +57,14 @@
         setSelection('clickModifier', 'Alt');
         setSelection('shortcutModifier', 'Alt');
         setSelection('shortcutKey', 'W');
-        setSelection('source', 'The Free Dictionary (Print)');
-        document.getElementById('shortcutEnable').checked = true;
-        document.getElementById('shortcutSelection').checked = false;
-        document.getElementById('frameWidth').value = 550;
-        document.getElementById('frameHeight').value = 250;
-        document.getElementById('queryFormWidth').value = 250;
-        document.getElementById('hideWithEscape').checked = true;
-        document.getElementById('saveFrameSize').checked = true;
+        setSelection('selectedSource', 'Simple Dictionaries::The Free Dictionary (Print)');
+        $('shortcutEnable').checked = true;
+        $('shortcutSelection').checked = false;
+        $('frameWidth').value = 550;
+        $('frameHeight').value = 250;
+        $('queryFormWidth').value = 250;
+        $('hideWithEscape').checked = true;
+        $('saveFrameSize').checked = true;
       
         // Override defaults by saved settings.
         for (var i in selects) {
@@ -183,64 +76,38 @@
         for (var i in checkboxes) {
           var checkbox = checkboxes[i];
           var checked = localStorage.getObject(checkbox);
-          if (checked != null) document.getElementById(checkbox).checked = checked;
-        }
-      
-        for (var i in textboxes) {
-          var textbox = textboxes[i];
-          var val = localStorage.getObject(textbox);
-          if (val != null) document.getElementById(textbox).value = val;
+          if (checked != null) $(checkbox).checked = checked;
         }
       
         for (var i in numboxes) {
           var textbox = numboxes[i];
           var val = localStorage.getObject(textbox);
-          if (val != null) document.getElementById(textbox).value = Math.round(val);
+          if (val != null) $(textbox).value = Math.round(val);
         }
         
         updateShortcutFields();
-        engine = localStorage.getObject('engineName');
-        if (engine) {
-          setSelection('source', engine);
-        }
-        updateEngine();
       }
       
       // Saves state to localStorage.
       function saveOptions() {
         for (var i in selects) {
           var select = selects[i];
-          localStorage.setObject(select, document.getElementById(select).value);
+          localStorage.setObject(select, $(select).value);
         }
       
         for (var i in checkboxes) {
           var checkbox = checkboxes[i];
-          localStorage.setObject(checkbox, document.getElementById(checkbox).checked);
-        }
-      
-        for (var i in textboxes) {
-          var textbox = textboxes[i];
-          localStorage.setObject(textbox, document.getElementById(textbox).value);
+          localStorage.setObject(checkbox, $(checkbox).checked);
         }
       
         for (var i in numboxes) {
           var textbox = numboxes[i];
-          var value = parseInt(document.getElementById(textbox).value);
+          var value = parseInt($(textbox).value);
           if (!isNaN(value)) localStorage.setObject(textbox, value);
         }
         
-        // Save custom.
-        if (document.getElementById('source').value == 'Custom') {
-          custom = {};
-          custom.url = document.getElementById('url').value;
-          custom.target = document.getElementById('target').value;
-          custom.scrollX = document.getElementById('scrollX').value;
-          custom.scrollY = document.getElementById('scrollY').value;
-          localStorage.setObject('custom', custom);
-        }
-        
         // Fade in status message.
-        var status = document.getElementById('saveStatusMessage');
+        var status = $('saveStatusMessage');
         status.style.opacity = 1;
         setTimeout(function() {
           status.style.opacity = 0;
@@ -248,44 +115,172 @@
       }
       
       function updateShortcutFields() {
-        checked = document.getElementById('shortcutEnable').checked;
-        document.getElementById('shortcutModifier').disabled = !checked;
-        document.getElementById('shortcutKey').disabled = !checked;
-        document.getElementById('shortcutSelection').disabled = !checked;
+        checked = $('shortcutEnable').checked;
+        $('shortcutModifier').disabled = !checked;
+        $('shortcutKey').disabled = !checked;
+        $('shortcutSelection').disabled = !checked;
       }
       
-      function updateEngine() {
-        name = document.getElementById('source').value;
-        if (name == 'Custom') {
-          document.getElementById('url').disabled = false;
-          document.getElementById('target').disabled = false;
-          document.getElementById('scrollX').disabled = false;
-          document.getElementById('scrollY').disabled = false;
-          
-          custom = localStorage.getObject('custom');
-          if (custom) {
-            document.getElementById('engineName').value = 'Custom';
-            document.getElementById('url').value = custom.url;
-            document.getElementById('target').value = custom.target;
-            document.getElementById('scrollX').value = custom.scrollX;
-            document.getElementById('scrollY').value = custom.scrollY;
+      function hideSourceForm() {
+        var sourceEditor = $('sourceEditor');
+        sourceEditor.style.opacity = '0';
+        setTimeout(function() {
+          if (sourceEditor.style.opacity == '0') {
+            sourceEditor.style.visibility = 'hidden';
           }
-        } else {
-          document.getElementById('url').disabled = true;
-          document.getElementById('target').disabled = true;
-          document.getElementById('scrollX').disabled = true;
-          document.getElementById('scrollY').disabled = true;
+        }, 1100);
+        grayOut(false);
+      }
+      
+      function showSourceForm() {
+        $('sourceEditor').style.opacity = '1';
+        $('sourceEditor').style.visibility = 'visible';
+        grayOut(true);
+        
+        document.body.onkeydown = function(e) {
+          if (e.which == 27) {  // Escape
+            hideSourceForm();
+          }
+        };
+        $('cancelForm').onclick = hideSourceForm;
+        $('_shader').onclick = hideSourceForm;
+      }
+      
+      function showAddForm() {
+        $('engineName').value = '';
+        setSelection('category', 'Search Engines');
+        $('url').value = '';
+        $('target').value = '';
+        $('scrollX').value = 0;
+        $('scrollY').value = 0;
+        
+        $('sourceEditorTitle').innerHTML = 'Create Source';
+        var button = $('createSource');
+        button.value = 'Create Source';
+        button.disabled = 'disabled';
+        button.onclick = function() {
+          var category = $('category').value;
+          var name = $('engineName').value;
+          var sources = localStorage.getObject('sources');
           
-          document.getElementById('engineName').value = name;
-          document.getElementById('url').value = DICTIONARIES[name].url;
-          document.getElementById('target').value = DICTIONARIES[name].target;
-          document.getElementById('scrollX').value = DICTIONARIES[name].scrollX;
-          document.getElementById('scrollY').value = DICTIONARIES[name].scrollY;
+          if (!sources[category]) {
+            sources[category] = {};
+          } else if (sources[category][name]) {
+            alert('A source with the selected name and category already exists.');
+            return;
+          }
+        
+          var source = {
+            url: $('url').value,
+            target: $('target').value,
+            scrollX: $('scrollX').value,
+            scrollY: $('scrollY').value
+          };
+          
+          sources[category][name] = source;
+          localStorage.setObject('sources', sources);
+
+          fillSourcesList();
+          setSelection('selectedSource', category + '::' + name);
+          hideSourceForm();
+        };
+        
+        showSourceForm();
+        validateForm();
+      }
+      
+      function showEditForm() {
+        var source = getSource($('selectedSource').value);
+        
+        $('engineName').value = source.name;
+        setSelection('category', source.category);
+        $('url').value = source.url;
+        $('target').value = source.target;
+        $('scrollX').value = source.scrollX;
+        $('scrollY').value = source.scrollY;
+        
+        $('sourceEditorTitle').innerHTML = 'Edit Source';
+        var button = $('createSource');
+        button.value = 'Apply';
+        button.disabled = '';
+        button.attributes['data-oldName'] = source.name;
+        button.attributes['data-oldCategory'] = source.category;
+        button.onclick = function() {
+          var sources = localStorage.getObject('sources');
+          var old_name = button.attributes['data-oldName'];
+          var old_category = button.attributes['data-oldCategory'];
+          var name = $('engineName').value;
+          var category = $('category').value;
+          
+          if (old_category != category || old_name != name) {
+            delete sources[old_category][old_name];
+            localStorage.setObject('selectedSource', category + '::' + name);
+          }
+        
+          var source = {
+            url: $('url').value,
+            target: $('target').value,
+            scrollX: $('scrollX').value,
+            scrollY: $('scrollY').value
+          };
+          
+          if (!sources[category]) sources[category] = {};
+          sources[category][name] = source;
+          localStorage.setObject('sources', sources);
+
+          fillSourcesList();
+          setSelection('selectedSource', category + '::' + name);
+          hideSourceForm();
+        };
+        
+        showSourceForm();
+        validateForm();
+      }
+      
+      function validateForm() {
+        var url = $('url').value;
+        var name_valid = $('engineName').value;
+        var url_valid = (/^https?:\/\/[^\/]+\/.*$/.test(url) && /\$\$/.test(url));
+        $('engineName').className = name_valid ? 'valid' : 'invalid';
+        $('url').className = url_valid ? 'valid' : 'invalid';
+        $('createSource').disabled = (name_valid && url_valid) ? '' : 'disabled';
+      }
+      
+      function initNumberBoxes() {
+        var restrictToNumbers = function(e) {
+          var key = String.fromCharCode(e.which);
+          var ENTER = 13;
+          if (e.which != ENTER && !/\d/.test(key)) {
+            e.preventDefault();
+          }
+        };
+        var checkEmpty = function() {
+          if (this.value == '') this.value = '0';
+        };
+        
+        var number_boxes = ['scrollX', 'scrollY', 'frameWidth', 'frameHeight',
+                            'queryFormWidth']
+        for (var i in number_boxes) {
+          $(number_boxes[i]).onkeypress = restrictToNumbers;
+          $(number_boxes[i]).onkeyup = checkEmpty;
         }
       }
       //]]>
     </script>
     <style type="text/css">
+      #sourceEditor input[type=text] {
+        border: 1px #bbb solid;
+        -webkit-transition: background-color 0.2s linear;
+      }
+      
+      .invalid {
+        background-color: #fcc;
+      }
+      
+      .valid {
+        background-color: #cfc;
+      }
+      
       body {
         font-family: Arial, Tahoma, sans-serif;
         margin-top: 0px;
@@ -304,16 +299,21 @@
       }
       label {
         float: left;
-        width: 20em;
+        width: 15em;
         padding-right: 20px;
         text-align: right;
+      }
+      select {
+        max-width: 200px;
+        position: relative;
+        top: -3px;
       }
       .field {
         padding-top: 5px;
       }
       .note {
         color: grey;
-        margin-left: 28.25em;
+        margin-left: 21.7em;
         font-size: 75%;
       }
       #container {
@@ -363,11 +363,11 @@
         position: relative;
         top: -4px;
       }
-      input[type=button] {
+      #saveButton {
         margin: auto;
         margin-bottom: 10px;
         margin-top: -10px;
-        background-image: -webkit-gradient(linear, left top, left bottom, from(#BBBBBB), to(gray));
+        background-image: -webkit-gradient(linear, left top, left bottom, from(#BBBBBB), to(#808080));
         color: white;
         border: none;
         border-radius: 15px;
@@ -379,17 +379,46 @@
         font-size: 120%;
       }
 
-      input[type=button]:hover {
+      #saveButton:hover {
+        background-image: -webkit-gradient(linear, left top, left bottom, from(#CCC), to(#909090));
+      }
+      #saveButton:active {
         background-image: -webkit-gradient(linear, left top, left bottom, from(gray), to(#BBBBBB));
         padding: 3px 12px 2px 13px;
       }
+      button {
+        float: right;
+        position: relative;
+        top: -4px;
+      }
+      #sourceEditor {
+        width: 570px;
+        position: fixed;
+        top: 200px;
+        z-index: 2;
+        -webkit-box-shadow: inset rgba(0, 0, 0, 0.15) 0px 3px 5px;
+        -webkit-transition: opacity 1.0s ease;
+        opacity: 0;
+        visibility: hidden;
+      }
+      .rangeValue {
+        color: #666666;
+        position: relative;
+        top: -8px;
+      }
     </style>
   </head>
-  <body onload="fillEnginesList();restoreOptions()">
+  <body onload="fillSourcesList(); restoreOptions(); initNumberBoxes();">
     <div id="container">
-      <h1>Inline Search & Lookup Options</h1>
+      <h1>Inline Search &amp; Lookup Options</h1>
       <fieldset>
         <legend>General</legend>
+        <div class="field">
+          <label for="selectedSource">Dictionary or Search Engine:</label>
+          <select id="selectedSource"></select>
+          <button onclick="showAddForm();" title="Create Custom Source">Add</button>
+          <button onclick="showEditForm();" title="Edit Selected Source">Edit</button>
+        </div>
         <div class="field">
           <label for="clickModifier">Mouse lookup modifier:</label>
           <select id="clickModifier">
@@ -460,36 +489,6 @@
         </div>
       </fieldset>
       <fieldset>
-        <legend>Source</legend>
-        <div class="field">
-          <label for="source">Dictionary or Search Engine:</label>
-          <select id="source" onchange="updateEngine()"></select>
-        </div>
-        <div class="field">
-          <label for="engineName">Name:</label>
-          <input type="text" id="engineName" style="width: 17em" disabled />
-        </div>
-        <div class="field">
-          <label for="url">URL:</label>
-          <input type="text" id="url" style="width: 17em" />
-        </div>
-        <div class="note">
-          Note: Use $$ as the query placeholder.
-        </div>
-        <div class="field">
-          <label for="target">Scroll to Element ID/Class:</label>
-          <input type="text" id="target" style="width: 10em" />
-        </div>
-        <div class="field">
-          <label for="scrollX">Scroll Right By:</label>
-          <input type="text" id="scrollX" />
-        </div>
-        <div class="field">
-          <label for="scrollY">Scroll Down By:</label>
-          <input type="text" id="scrollY" />
-        </div>
-      </fieldset>
-      <fieldset>
         <legend>Sizing</legend>
         <div class="field">
           <label for="frameWidth">Popup width:</label>
@@ -508,9 +507,51 @@
           <input type="checkbox" id="saveFrameSize" />
         </div>
       </fieldset>
-      <input type="button" onclick="saveOptions()" value="Save" />
+      <input id="saveButton" type="button" onclick="saveOptions()" value="Save" />
       <div id="saveStatusMessage">Options saved.</div>
+      
+      <fieldset id="sourceEditor">
+        <legend id="sourceEditorTitle"></legend>
+        <div class="field">
+          <label for="engineName">Name:</label>
+          <input type="text" id="engineName" style="width: 17em" onkeyup="validateForm();" />
+        </div>
+        <div class="field">
+          <label for="category">Category:</label>
+          <select id="category">
+            <option>Search Engines</option>
+            <option>Simple Dictionaries</option>
+            <option>Sophisticated Dictionaries</option>
+            <option>Non-English Dictionaries</option>
+            <option>Encyclopedias</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="url">URL:</label>
+          <input type="text" id="url" style="width: 17em" onkeyup="validateForm();" />
+          <div class="note">
+            Note: Use $$ as the query placeholder.
+          </div>
+        </div>
+        <div class="field">
+          <label for="target">Scroll to Element ID/Class:</label>
+          <input type="text" id="target" style="width: 10em" />
+        </div>
+        <div class="field">
+          <label for="scrollX">Scroll Right By:</label>
+          <input type="text" id="scrollX" />
+        </div>
+        <div class="field">
+          <label for="scrollY">Scroll Down By:</label>
+          <input type="text" id="scrollY" />
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <input type="button" id="createSource" value="Ok" disabled="disabled" />
+          <input type="button" id="cancelForm" value="Cancel" />
+        </div>
+      </fieldset>
     </div>
   </body>
 </html>
-    

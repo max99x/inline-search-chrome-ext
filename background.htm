@@ -1,33 +1,150 @@
 <html>
-  <script>
-    // Helpers to store and access objects in local storage.
-    Storage.prototype.setObject = function(key, value) {
-      this.setItem(key, JSON.stringify(value));
-    }
-    Storage.prototype.getObject = function(key) {
-      var value = this.getItem(key);
-      if (value == null) {
-        return null;
-      } else {
-        return JSON.parse(value);
+  <script type="text/javascript" src="helper.js"></script>
+  <script type="text/javascript">
+    /***************************************************************
+     *                      Default Sources List                   *
+     ***************************************************************/
+    
+    var DEFAULT_SOURCES  = {
+      'Search Engines': {
+        'Google': {
+          url: 'http://www.google.com/search?q=$$',
+          target: 'res',
+          scrollX: 0,
+          scrollY: 0
+        },
+        'Yahoo': {
+          url: 'http://www.yahoo.com/search?q=$$',
+          target: 'main',
+          scrollX: 0,
+          scrollY: 0
+        },
+        'Bing': {
+          url: 'http://www.bing.com/search?q=$$',
+          target: 'results',
+          scrollX: 0,
+          scrollY: 0
+        }
+      },
+      'Simple Dictionaries': {
+        'WordNet 3.0': {
+          url: 'http://wordnetweb.princeton.edu/perl/webwn?s=$$',
+          target: '',
+          scrollX: 0,
+          scrollY: 170
+        },
+        'Webster 1913 (OneLook)': {
+          url: 'http://www.onelook.com/?other=web1913&w=$$',
+          target: '',
+          scrollX: 0,
+          scrollY: 200
+        },
+        'Webster 1913 (Extended)': {
+          url: 'http://www.webster-dictionary.org/definition/$$',
+          target: 'TitleLine',
+          scrollX: 0,
+          scrollY: 0
+        },
+        'The Free Dictionary (Print)': {
+          url: 'http://www.tfd.com/p/$$',
+          target: 'MainTxt',
+          scrollX: 0,
+          scrollY: 0
+        },
+        'InfoPlease Dictionary': {
+          url: 'http://dictionary.infoplease.com/$$',
+          target: 'meaning',
+          scrollX: 0,
+          scrollY: 0
+        }
+      },
+      'Sophisticated Dictionaries': {
+        'RhymeZone': {
+          url: 'http://www.rhymezone.com/r/rhyme.cgi?Word=$$',
+          target: '',
+          scrollX: 30,
+          scrollY: 310
+        },
+        'WordSmyth': {
+          url: 'http://www.wordsmyth.net/live/home.php?script=search&matchent=$$&matchtype=exact',
+          target: '',
+          scrollX: 0,
+          scrollY: 210
+        },
+        'Wiktionary': {
+          url: 'http://en.wiktionary.org/wiki/$$',
+          target: 'firstHeading',
+          scrollX: 0,
+          scrollY: 0
+        },
+        'Answers.com': {
+          url: 'http://www.answers.com/topic/$$',
+          target: '',
+          scrollX: 178,
+          scrollY: 283
+        },
+        'The Free Dictionary': {
+          url: 'http://www.tfd.com/$$',
+          target: 'MainTitle',
+          scrollX: 0,
+          scrollY: 0
+        },
+        'Dictionary.com': {
+          url: 'http://dictionary.reference.com/browse/$$',
+          target: 'query_h1',
+          scrollX: 0,
+          scrollY: 0
+        },
+        'Merriam-Webster': {
+          url: 'http://www.merriam-webster.com/dictionary/$$',
+          target: 'mwEntryData',
+          scrollX: -5,
+          scrollY: 0
+        },
+        'YourDictionary.com': {
+          url: 'http://www.yourdictionary.com/$$',
+          target: 'def',
+          scrollX: 0,
+          scrollY: 0
+        },
+        'AllWords.com': {
+          url: 'http://www.allwords.com/word-$$.html',
+          target: '',
+          scrollX: 175,
+          scrollY: 138
+        }
+      },
+      'Encyclopedias': {
+        'Wikipedia': {
+          url: 'http://en.wikipedia.org/wiki/$$',
+          target: 'firstHeading',
+          scrollX: 240,
+          scrollY: 10
+        },
+        'Encyclopedia Britannica': {
+          url: 'http://www.britannica.com/bps/search?query=$$',
+          target: 'bps-checked-did-you-mean',
+          scrollX: 0,
+          scrollY: 0
+        },
+        'InfoPlease Encyclopedia': {
+          url: 'http://www.infoplease.com/search?q=$$&in=all',
+          target: 'SearchList',
+          scrollX: 0,
+          scrollY: 0
+        },
+        'Encyclopedia.com': {
+          url: 'http://www.encyclopedia.com/topic/$$.aspx',
+          target: 'docpart',
+          scrollX: 0,
+          scrollY: 0
+        }
       }
-    }
-
-    // Helper to get extension version.
-    chrome.extension.getVersion = function() { 
-      if (!chrome.extension.version_) { 
-        var xhr = new XMLHttpRequest(); 
-        xhr.open("GET", chrome.extension.getURL('manifest.json'), false); 
-        xhr.onreadystatechange = function() { 
-          if (this.readyState == 4) { 
-            var manifest = JSON.parse(this.responseText); 
-            chrome.extension.version_ = manifest.version; 
-          } 
-        }; 
-        xhr.send(); 
-      } 
-      return chrome.extension.version_; 
-    }; 
+    };
+    
+    /***************************************************************
+     *                           Server                            *
+     ***************************************************************/
         
     // Server procedure for content script.
     // Receives a request containing two parameters:
@@ -35,20 +152,27 @@
     //     "retrieve" to retrieve an object from local storage.
     //     "store" to store an object in the local storage.
     //     "get_filter" to retrieve the filter stats for a given URL.
-    //   arg: the term to look up or the name of the object to retrieve/store.
+    //     "get_source_url" to retrieve the URL of the selected source.
+    //   arg:
+    //     For "store"/"retrieve":
+    //       the term to look up or the name of the object to retrieve/store.
+    //     For "get_filter":
+    //       the URL for which to search for a filter.
     //   arg2: the object to store. Used only with "store".
     chrome.extension.onRequest.addListener(function(request, sender, callback) {
       if (request.method == 'retrieve') {
         // Return an object from local storage.
         callback(localStorage.getObject(request.arg));
       } else if (request.method == 'store') {
-        // Return an object from local storage.
+        // Set an object in local storage.
         localStorage.setObject(request.arg, request.arg2);
         callback('');
       } else if (request.method == 'get_filter') {
         // Return the appropriate filter object.
+        var source = getCurrentSource();
+        console.assert(source != null);
         var req_url = request.arg;
-        var url_parts = localStorage.getObject('url').split(/\$\$/g);
+        var url_parts = source['url'].split(/\$\$/g);
         var all_match = true;
         
         for (var j in url_parts) {
@@ -59,27 +183,60 @@
         }
         
         if (all_match) {
-          callback({target: localStorage.getObject('target'),
-                    scroll: {x: localStorage.getObject('scrollX'),
-                             y: localStorage.getObject('scrollY')}});
+          callback({target: source['target'],
+                    scroll: {x: source['scrollX'], y: source['scrollY']}});
         } else {
           callback('');
         }
+      } else if (request.method == 'get_source_url') {
+        callback(getCurrentSource().url);
       } else {
         // Invalid request method. Ignore it.
         callback('');
       }
     });
     
-    // If new version is loaded, show the options page.
-    saved_version = localStorage.getObject('version');
-    current_version = chrome.extension.getVersion();
-    if (saved_version) {
-      saved_version = saved_version.split('.')[0] + '.' + saved_version.split('.')[1];
-      current_version = current_version.split('.')[0] + '.' + current_version.split('.')[1];
-    }
-    if (saved_version != current_version) {
-      localStorage.setObject('version', current_version);
+    /***************************************************************
+     *                    First Run Procedures                     *
+     ***************************************************************/
+     
+    // Check if we're upgrading from a 0.x version.
+    var saved_version = localStorage.getObject('version') || '0.0';
+    if (saved_version.match(/^0\./)) {
+      // Save version.
+      localStorage.setObject('version', chrome.extension.getVersion());
+      
+      // Save sources list.
+      var sources = DEFAULT_SOURCES;
+      var saved_custom = localStorage.getObject('custom');
+      if (saved_custom) {
+        sources['Other'] = { 'Custom': saved_custom };
+      }
+      localStorage.setObject('sources', sources);
+      
+      // Rename selected source to new scheme.
+      var selected_engine = localStorage.getObject('engineName');
+      if (selected_engine) {
+        for (var i in sources) {
+          for (var j in sources[i]) {
+            if (selected_engine == j) {
+              selected_engine = i + '::' + j;
+              break;
+            }
+          }
+        }
+      } else {
+        selected_engine = 'Simple Dictionaries::The Free Dictionary (Print)';
+      }
+      localStorage.setObject('selectedSource', selected_engine);
+      
+      // Delete localStorage values that are no longer used:
+      localStorage.delObject('engineName');
+      localStorage.delObject('scrollX');
+      localStorage.delObject('scrollY');
+      localStorage.delObject('target');
+      
+      // Open the options page.
       chrome.tabs.create({url: 'options.htm'});
     }
   </script>
