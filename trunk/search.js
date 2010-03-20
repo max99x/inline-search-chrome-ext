@@ -441,6 +441,7 @@ function makeMoveable(box, margin) {
 
   box.addEventListener('mousedown', function(e) {
     var y = box.offsetTop;
+    if (box.style.position == 'fixed') y += document.body.scrollTop;
     var zoom_ratio = getZoomRatio();
     var mouse_y = e.pageY / zoom_ratio;
     if (mouse_y >= y && mouse_y <= y + margin * zoom_ratio) {
