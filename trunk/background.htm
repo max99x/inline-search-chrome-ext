@@ -175,7 +175,7 @@
         var url_parts = source['url'].split(/\$\$/g);
         var all_match = true;
         
-        for (var j in url_parts) {
+        for (var j = 0; j < url_parts.length; j++) {
           if (req_url.indexOf(url_parts[j]) == -1) {
             all_match = false;
             break;
