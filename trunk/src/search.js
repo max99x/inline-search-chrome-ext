@@ -48,21 +48,21 @@ function initialize() {
   for (var opt in options) {
     setOpt(opt);
   }
-  
+
   chrome.extension.sendRequest({method: 'get_source_url'}, function(response) {
     source_url = response;
   });
-  
+
   // Manually inject the stylesheet into non-HTML pages that have no <head>.
   if (!document.head) {
     link = document.createElement('link');
     link.rel = 'stylesheet';
     link.type = 'text/css';
     link.href = chrome.extension.getURL('frame.css');
-    
+
     document.body.appendChild(link);
   }
-  
+
   // Set event listeners.
   window.addEventListener('keydown', handleKeypress, false);
   setTimeout(function() {
@@ -88,7 +88,7 @@ function handleClick(e) {
   // Remove frame or form if one is displayed.
   if (!is_inside_frame) {
     removePopup(true, true);
-    
+
     // If the modifier is held down and we have a selection, create a pop-up.
     if (checkModifier(options.clickModifier, e)) {
       var query = getTrimmedSelection();
@@ -111,7 +111,7 @@ function handleKeypress(e) {
   if (!options.shortcutEnable) return;
   if (!checkModifier(options.shortcutModifier, e)) return;
   if (options.shortcutKey.charCodeAt(0) != e.keyCode) return;
-  
+
   if (options.shortcutSelection && getTrimmedSelection() != '') {
     // Lookup selection.
     removePopup(true, true);
@@ -138,12 +138,12 @@ function createQueryForm() {
   var windowY = (window.innerHeight - (PADDING_TOP + options.queryFormHeight + PADDING_BOTTOM)) / 2;
   var x = body.scrollLeft + windowX;
   var y = body.scrollTop + windowY;
-  
+
   // Create the form, set its id and insert it.
   var qform = document.createElement('div');
   qform.id = FORM_ID;
   body.appendChild(qform);
-  
+
   // Set form style.
   var zoom_ratio = getZoomRatio();
   qform.style.position = 'absolute';
@@ -151,12 +151,12 @@ function createQueryForm() {
   qform.style.top = (y / zoom_ratio) + 'px';
   qform.style.width = options.queryFormWidth + 'px';
   qform.style.zIndex = BASE_Z_INDEX;
-    
+
   // Add textbox.
   textbox = document.createElement('input');
   textbox.type = 'text';
   qform.appendChild(textbox);
-  
+
   function initLookup() {
     grayOut(false, ROOT_ID);
     removePopup(false, true);
@@ -164,32 +164,32 @@ function createQueryForm() {
       createCenteredPopup(textbox.value);
     }
   }
-  
+
   textbox.focus();
-  
+
   // Add button.
   button = document.createElement('input');
   button.type = 'button';
   button.value = 'Search';
   qform.appendChild(button);
-  
+
   // Set lookup event handlers.
   textbox.addEventListener('keypress', function(e) {
     if (e.keyCode == 13) {  // Pressed Enter.
       setTimeout(initLookup, 400);
     }
   }, false);
-    
+
   button.addEventListener('click', function(e) {
     setTimeout(initLookup, 400);
   }, false);
-  
+
   // Schedule a resize of the textbox to accomodate the button in a single line.
   setTimeout(function() {
     var width = options.queryFormWidth - button.offsetWidth - 2 * PADDING_FORM - 3;
     textbox.style.width = width + 'px';
   }, 100);
-  
+
   // Initiate the fade-in animation in after 100 milliseconds.
   // Setting it now will not trigger the CSS3 animation sequence.
   setTimeout(function() {
@@ -223,7 +223,7 @@ function createPopup(query, x, y, windowX, windowY, fixed) {
   // Unique class to differentiate between frame instances.
   frame.className = ROOT_ID + (new Date()).getTime();
   body.appendChild(frame);
-  
+
   // Calculate frame position.
   var window_width = window.innerWidth;
   var window_height = window.innerHeight;
@@ -232,21 +232,21 @@ function createPopup(query, x, y, windowX, windowY, fixed) {
   var top = 0;
   var left = 0;
   var zoom_ratio = getZoomRatio();
-  
+
   if (windowX + full_frame_width * zoom_ratio >= window_width) {
     left = x / zoom_ratio - full_frame_width;
     if (left < 0) left = 5;
   } else {
     left = x / zoom_ratio;
   }
-  
+
   if (windowY + full_frame_height * zoom_ratio >= window_height) {
     top = y / zoom_ratio - full_frame_height;
     if (top < 0) top = 5;
   } else {
     top = y / zoom_ratio;
   }
-  
+
   // Set frame style.
   frame.style.position = fixed ? 'fixed' : 'absolute';
   frame.style.left = left + 'px';
@@ -254,23 +254,23 @@ function createPopup(query, x, y, windowX, windowY, fixed) {
   frame.style.width = options.frameWidth + 'px';
   frame.style.height = options.frameHeight + 'px';
   frame.style.zIndex = BASE_Z_INDEX;
-  
+
   // Create a dragging handle.
   handle = document.createElement('div');
   handle.id = ROOT_ID + '_handle';
   body.appendChild(handle);
-  
+
   handle.style.position = fixed ? 'fixed' : 'absolute';
   handle.style.left = (left + options.frameWidth + PADDING_LEFT - 9) + 'px';
   handle.style.top = (top + options.frameHeight + PADDING_TOP + 3) + 'px';
   handle.style.background = 'url("' + HANDLE_ICON_URL + '")';
   handle.style.zIndex = BASE_Z_INDEX + 1;
-  
+
   makeResizeable(frame, handle);
-  
+
   // Make frame draggable by its top.
   makeMoveable(frame, PADDING_TOP);
-  
+
   // Initiate the fade-in animation in after 100 milliseconds.
   // Setting it now will not trigger the CSS3 animation sequence.
   setTimeout(function() {
@@ -282,18 +282,18 @@ function createPopup(query, x, y, windowX, windowY, fixed) {
 // Fade out then destroy the frame and/or form.
 function removePopup(do_frame, do_form) {
   var form = document.getElementById(FORM_ID);
-  
+
   if (form && do_form) {
     grayOut(false, ROOT_ID);
     form.style.opacity = 0;
     setTimeout(function() {if (form) body.removeChild(form);}, 400);
   }
-  
+
   // Remember the current frame's unique class name.
   var frame_ref = document.getElementById(ROOT_ID);
   var handle_ref = document.getElementById(ROOT_ID + '_handle');
   var frame_class = frame_ref ? frame_ref.className : null;
-  
+
   if (frame_ref && do_frame) {
     frame_ref.style.opacity = 0;
     handle_ref.style.opacity = 0;
@@ -374,7 +374,7 @@ function makeResizeable(container, handle) {
       last_position.y = e.clientY;
       container.style.height = new_height + 'px';
       handle.style.top = new_handle_top + 'px';
-      
+
       if (options.saveFrameSize) {
         options.frameHeight = new_height;
         chrome.extension.sendRequest({method: 'store', arg: 'frameHeight', arg2: new_height}, function(response) {});
@@ -384,16 +384,16 @@ function makeResizeable(container, handle) {
       last_position.x = e.clientX;
       container.style.width = new_width + 'px';
       handle.style.left = new_handle_left + 'px';
-      
+
       if (options.saveFrameSize) {
         options.frameWidth = new_width;
         chrome.extension.sendRequest({method: 'store', arg: 'frameWidth', arg2: new_width}, function(response) {});
       }
     }
-    
+
     e.preventDefault();
   }
-  
+
   handle.addEventListener('mousedown', function(e) {
     last_position = {x: e.clientX, y: e.clientY};
     window.addEventListener('mousemove', moveListener);
@@ -407,9 +407,9 @@ function makeResizeable(container, handle) {
     layer.style.height = '100%';
     layer.style.opacity = '0';
     layer.style.zIndex = BASE_Z_INDEX+1;
-    
+
     body.appendChild(ruler);
-    
+
     window.addEventListener('mouseup', function(e) {
       window.removeEventListener('mousemove', moveListener);
       try {body.removeChild(ruler);} catch (e) {}
@@ -428,14 +428,14 @@ function makeMoveable(box, margin) {
     var moved = {x: (e.clientX - last_position.x),
                  y: (e.clientY - last_position.y)};
     last_position = {x: e.clientX, y: e.clientY};
-    
+
     box.style.top = (box.offsetTop + moved.y) + 'px';
     box.style.left = (box.offsetLeft + moved.x) + 'px';
-    
+
     var handle = document.getElementById(ROOT_ID + '_handle');
     handle.style.top = (handle.offsetTop + moved.y) + 'px';
     handle.style.left = (handle.offsetLeft + moved.x) + 'px';
-    
+
     e.preventDefault();
   }
 
@@ -446,7 +446,7 @@ function makeMoveable(box, margin) {
     var mouse_y = e.pageY / zoom_ratio;
     if (mouse_y >= y && mouse_y <= y + margin * zoom_ratio) {
       last_position = {x: e.clientX, y: e.clientY};
-      
+
       layer = document.createElement('div');
       body.appendChild(layer);
       layer.style.position = 'absolute';
@@ -456,7 +456,7 @@ function makeMoveable(box, margin) {
       layer.style.height = '100%';
       layer.style.opacity = '0';
       layer.style.zIndex = BASE_Z_INDEX+1;
-      
+
       window.addEventListener('mousemove', moveListener);
       window.addEventListener('mouseup', function(e) {
         window.removeEventListener('mousemove', moveListener);
@@ -471,7 +471,7 @@ function makeMoveable(box, margin) {
 // Checks whether a click event was inside the current popup frame.
 function isClickInsideFrame(e) {
   frame_ref = document.getElementById(ROOT_ID);
-  
+
   if (frame_ref) {
     if (frame_ref.style.position == 'absolute') {
       var x = e.pageX;
@@ -480,11 +480,11 @@ function isClickInsideFrame(e) {
       var x = e.clientX;
       var y = e.clientY;
     }
-    
+
     var zoom_ratio = getZoomRatio();
     x /= zoom_ratio;
     y /= zoom_ratio;
-    
+
     if (x >= frame_ref.offsetLeft &&
         x <= frame_ref.offsetLeft + frame_ref.offsetWidth &&
         y >= frame_ref.offsetTop &&
@@ -492,7 +492,7 @@ function isClickInsideFrame(e) {
       return true;
     }
   }
-  
+
   return false;
 }
 

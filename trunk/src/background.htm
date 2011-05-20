@@ -4,7 +4,7 @@
     /***************************************************************
      *                      Default Sources List                   *
      ***************************************************************/
-    
+
     var DEFAULT_SOURCES  = {
       'Search Engines': {
         'Google': {
@@ -141,11 +141,11 @@
         }
       }
     };
-    
+
     /***************************************************************
      *                           Server                            *
      ***************************************************************/
-        
+
     // Server procedure for content script.
     // Receives a request containing two parameters:
     //   method:
@@ -174,14 +174,14 @@
         var req_url = request.arg;
         var url_parts = source['url'].split(/\$\$/g);
         var all_match = true;
-        
+
         for (var j = 0; j < url_parts.length; j++) {
           if (req_url.indexOf(url_parts[j]) == -1) {
             all_match = false;
             break;
           }
         }
-        
+
         if (all_match) {
           callback({target: source['target'],
                     scroll: {x: source['scrollX'], y: source['scrollY']}});
@@ -195,17 +195,17 @@
         callback('');
       }
     });
-    
+
     /***************************************************************
      *                    First Run Procedures                     *
      ***************************************************************/
-     
+
     // Check if we're upgrading from a 0.x version.
     var saved_version = localStorage.getObject('version') || '0.0';
     if (saved_version.match(/^0\./)) {
       // Save version.
       localStorage.setObject('version', chrome.extension.getVersion());
-      
+
       // Save sources list.
       var sources = DEFAULT_SOURCES;
       var saved_custom = localStorage.getObject('custom');
@@ -213,7 +213,7 @@
         sources['Other'] = { 'Custom': saved_custom };
       }
       localStorage.setObject('sources', sources);
-      
+
       // Rename selected source to new scheme.
       var selected_engine = localStorage.getObject('engineName');
       if (selected_engine) {
@@ -229,13 +229,13 @@
         selected_engine = 'Simple Dictionaries::The Free Dictionary (Print)';
       }
       localStorage.setObject('selectedSource', selected_engine);
-      
+
       // Delete localStorage values that are no longer used:
       localStorage.delObject('engineName');
       localStorage.delObject('scrollX');
       localStorage.delObject('scrollY');
       localStorage.delObject('target');
-      
+
       // Open the options page.
       chrome.tabs.create({url: 'options.htm'});
     }
