@@ -35,9 +35,6 @@ var options = {
  ***************************************************************/
 // Main initialization function. Loads options and sets listeners.
 function initialize() {
-  // Run in top frame only.
-  if (window != top) return;
-
   // Load options.
   function setOpt(opt) {
     chrome.extension.sendRequest({method: 'retrieve', arg: opt}, function(response) {
@@ -83,6 +80,7 @@ function initialize() {
 // Handle lookup-on-click.
 function handleClick(e) {
   // Ignore clicks inside frame.
+  if (window.inlineSearchDisabled) return;
   is_inside_frame = isClickInsideFrame(e);
 
   // Remove frame or form if one is displayed.
@@ -103,6 +101,8 @@ function handleClick(e) {
 
 // Handle keyboard shortcut.
 function handleKeypress(e) {
+  if (window.inlineSearchDisabled) return;
+
   if (options.hideWithEscape && e.keyCode == 27) {
     removePopup(true, true);
     return;
