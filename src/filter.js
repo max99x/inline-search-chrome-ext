@@ -44,6 +44,7 @@ if (window != top) {
   var message = {method: 'get_filter', arg: String(window.location)};
   chrome.extension.sendRequest(message, function(response) {
     if (response) {
+      window.inlineSearchDisabled = true;
       applyScrolling(response.target, response.scroll.x, response.scroll.y);
     }
   });
