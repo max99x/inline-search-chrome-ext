@@ -45,17 +45,11 @@
           scrollX: 0,
           scrollY: 0
         },
-        'The Free Dictionary (Print)': {
-          url: 'http://www.tfd.com/p/$$',
-          target: 'MainTxt',
-          scrollX: 0,
-          scrollY: 0
-        },
         'InfoPlease Dictionary': {
           url: 'http://dictionary.infoplease.com/$$',
           target: 'meaning',
-          scrollX: 0,
-          scrollY: 0
+          scrollX: 20,
+          scrollY: 85
         }
       },
       'Sophisticated Dictionaries': {
@@ -201,6 +195,8 @@
      ***************************************************************/
 
     // Check if we're upgrading from a 0.x version.
+    var OLD_DEFAULT = 'Simple Dictionaries::The Free Dictionary (Print)';
+    var NEW_DEFAULT = 'Simple Dictionaries::InfoPlease Dictionary';
     var saved_version = localStorage.getObject('version') || '0.0';
     if (saved_version.match(/^0\./)) {
       // Save version.
@@ -225,8 +221,11 @@
             }
           }
         }
+        if (selected_engine.indexOf('::') == -1) {
+          selected_engine = NEW_DEFAULT;
+        }
       } else {
-        selected_engine = 'Simple Dictionaries::The Free Dictionary (Print)';
+        selected_engine = NEW_DEFAULT;
       }
       localStorage.setObject('selectedSource', selected_engine);
 
@@ -238,6 +237,15 @@
 
       // Open the options page.
       chrome.tabs.create({url: 'options.htm'});
+    }
+    // Check if we're upgrading from a 1.0.3.
+    if (saved_version.match(/^1\.0\.3$/)) {
+      // Replace TFD.
+      var selected_engine = localStorage.getObject('selectedSource');
+      if (selected_engine == OLD_DEFAULT) {
+        selected_engine = NEW_DEFAULT;
+      }
+      localStorage.setObject('selectedSource', selected_engine);
     }
   </script>
 </html>
