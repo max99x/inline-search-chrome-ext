@@ -1,6 +1,6 @@
 {
   "name": "Inline Search & Lookup",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Search the web or look up words by clicking on them and view results inline without leaving the page.",
   "icons": { "128": "icon.png" },
   "options_page": "options.htm",
